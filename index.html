@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exec200 Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0f7b4d; --brand-dark:#0b6b43; --ink:#191919; --gray:#404040;
+  --light:#f5f5f5; --white:#ffffff; --border:#e2e2e2; --muted:#777777;
+  --blue:#0078d4; --amber:#b8860b; --error:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans',Arial,sans-serif;color:var(--ink);background:var(--light);font-size:14px}
+h1,h2,h3{font-family:'Montserrat',sans-serif;color:var(--ink)}
+
+.topbar{background:var(--white);border-bottom:3px solid var(--brand);padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:34px;width:auto}
+.brand-mark{height:34px;width:34px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;flex-shrink:0}
+.brand h1{font-size:19px;font-weight:800;letter-spacing:.2px}
+.brand span{font-size:11.5px;color:var(--muted);display:block;margin-top:1px}
+
+.wrap{max-width:640px;margin:40px auto;padding:0 20px}
+.page-title{font-size:22px;font-weight:800;margin-bottom:2px}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:26px}
+.form-row{margin-bottom:16px}
+.form-row label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--gray);text-transform:uppercase;letter-spacing:.3px}
+.form-row label .req{color:var(--error);margin-left:2px}
+.form-row input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:16px;background:var(--white);transition:border-color .15s,box-shadow .15s}
+.form-row input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,123,77,.12)}
+.form-row input.invalid{border-color:var(--error)}
+.form-row input.invalid:focus{box-shadow:0 0 0 3px rgba(192,57,43,.12)}
+.form-row input.flagged{border-color:var(--amber)}
+.form-row input:disabled{background:#f5f5f5;color:var(--muted)}
+.field-error{display:none;font-size:11.5px;color:var(--error);margin-top:5px}
+.field-error.show{display:block}
+.hint{font-size:11.5px;color:var(--muted);margin:-6px 0 16px}
+
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:6px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;cursor:pointer;width:100%}
+.btn:hover:not(:disabled){background:var(--brand-dark)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.msg{display:none;align-items:flex-start;gap:9px;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.5;border:1px solid transparent}
+.msg.show{display:flex}
+.msg .ic{flex-shrink:0;font-weight:800;line-height:1.4}
+.msg.info{background:#eef2f7;border-color:#c9d6e5;color:#2c4a6b}
+.msg.success{background:#eaf6ef;border-color:#a9d8bd;color:var(--brand-dark)}
+.msg.duplicate{background:#fbe9e7;border-color:#f0b4ab;color:var(--error)}
+.msg.error{background:#fbe9e7;border-color:#f0b4ab;color:var(--error)}
+.msg a{color:inherit;text-decoration:underline;font-weight:700}
+
+footer{text-align:center;color:var(--muted);font-size:11.5px;margin-top:18px}
+
+@media (prefers-reduced-motion: reduce){
+  .spinner{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="logo.png" alt="Exec200 Systems" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'brand-mark',textContent:'E2'}))">
+    <div>
+      <h1>Exec200 Systems</h1>
+      <span>Vendor Registration Form</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="page-title">Register</div>
+  <div class="page-sub">Fill in the details below.</div>
+
+  <div class="form-card">
+    <div id="statusMessage" class="msg" role="status" aria-live="polite"></div>
+
+    <form id="businessForm" novalidate>
+      <div class="form-row">
+        <label for="businessName">Registered Name<span class="req">*</span></label>
+        <input type="text" id="businessName" name="businessName" autocomplete="organization" aria-describedby="err-businessName">
+        <div class="field-error" id="err-businessName">Please enter the business name.</div>
+      </div>
+
+      <div class="form-row">
+        <label for="businessEmail">Email<span class="req">*</span></label>
+        <input type="email" id="businessEmail" name="businessEmail" autocomplete="email" aria-describedby="err-businessEmail">
+        <div class="field-error" id="err-businessEmail">Please enter a valid email address.</div>
+      </div>
+
+      <div class="form-row">
+        <label for="cacNumber">RC/BN Number<span class="req">*</span></label>
+        <input type="text" id="cacNumber" name="cacNumber" autocomplete="off" aria-describedby="err-cacNumber">
+        <div class="field-error" id="err-cacNumber">Please enter the CAC number.</div>
+      </div>
+
+      <button type="button" class="btn" id="submitBtn">
+        <span class="spinner" id="spinner"></span>
+        <span id="submitLabel">Submit</span>
+      </button>
+    </form>
+  </div>
+
+  <footer>@Exec200 Systems 2026</footer>
+</div>
+
+<script>
+  const API_URL = "https://default7ee94446539448c794e9e1f52d4e0c.43.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/08/workflows/7aaef2e63a4d4934a56e503e76f962d4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cz4Rs91XDcKJiC13Z1HrIqvxqh68MowM65ZV3UXjr5U";
+  const HTTP_METHOD = "POST";
+  const REQUEST_TIMEOUT_MS = 20000;
+
+  const form = document.getElementById("businessForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const submitLabel = document.getElementById("submitLabel");
+  const spinner = document.getElementById("spinner");
+  const statusMessage = document.getElementById("statusMessage");
+
+  const fields = {
+    businessName: document.getElementById("businessName"),
+    businessEmail: document.getElementById("businessEmail"),
+    cacNumber: document.getElementById("cacNumber")
+  };
+
+  let isSubmitting = false;
+
+  const ICONS = { info: "ℹ", success: "✓", duplicate: "⚠", error: "✕" };
+
+  function showMessage(type, text) {
+    const content = /<a\s/i.test(String(text)) ? String(text) : escapeHtml(String(text));
+    statusMessage.innerHTML =
+      '<span class="ic">' + ICONS[type] + '</span><span>' + content + '</span>';
+    statusMessage.className = "msg show " + type;
+  }
+
+  function clearMessage() {
+    statusMessage.className = "msg";
+    statusMessage.innerHTML = "";
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function setFieldError(input, show) {
+    input.classList.toggle("invalid", show);
+    const err = document.getElementById("err-" + input.id);
+    if (err) err.classList.toggle("show", show);
+  }
+
+  function clearFieldFlags() {
+    Object.values(fields).forEach(f => f.classList.remove("flagged"));
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  function validateForm() {
+    let firstInvalid = null;
+    let valid = true;
+
+    const nameOk = fields.businessName.value.trim().length > 0;
+    setFieldError(fields.businessName, !nameOk);
+    if (!nameOk) { valid = false; firstInvalid = firstInvalid || fields.businessName; }
+
+    const emailVal = fields.businessEmail.value.trim();
+    const emailOk = emailVal.length > 0 && isValidEmail(emailVal);
+    setFieldError(fields.businessEmail, !emailOk);
+    if (!emailOk) { valid = false; firstInvalid = firstInvalid || fields.businessEmail; }
+
+    const cacOk = fields.cacNumber.value.trim().length > 0;
+    setFieldError(fields.cacNumber, !cacOk);
+    if (!cacOk) { valid = false; firstInvalid = firstInvalid || fields.cacNumber; }
+
+    if (firstInvalid) firstInvalid.focus();
+    return valid;
+  }
+
+  Object.values(fields).forEach(input => {
+    input.addEventListener("input", () => {
+      if (input.classList.contains("invalid")) setFieldError(input, false);
+      input.classList.remove("flagged");
+    });
+  });
+
+  function setBusy(busy) {
+    isSubmitting = busy;
+    submitBtn.disabled = busy;
+    spinner.classList.toggle("show", busy);
+    submitLabel.textContent = busy ? "Submitting…" : "Submit";
+    Object.values(fields).forEach(f => f.disabled = busy);
+  }
+
+  function extractMessage(data, rawText) {
+    if (data && typeof data === "object") {
+      const candidate = data.message || data.Message || data.error || data.Error ||
+        data.description || data.Description || data.result || data.Result ||
+        data.text || data.Text || data.status || data.Status;
+      if (typeof candidate === "string" || typeof candidate === "number") return String(candidate);
+      if (candidate && typeof candidate === "object") {
+        const nestedMessage = candidate.message || candidate.Message || candidate.error || candidate.Error ||
+          candidate.description || candidate.Description || candidate.text || candidate.Text;
+        if (typeof nestedMessage === "string" || typeof nestedMessage === "number") return String(nestedMessage);
+      }
+    }
+    return rawText && rawText.trim() ? rawText : null;
+  }
+
+  function displayApiMessage(message, fallback) {
+    if (!message || message === "[object Object]") return fallback;
+
+    const decoded = (() => {
+      const decoder = document.createElement("textarea");
+      decoder.innerHTML = String(message);
+      return decoder.value;
+    })();
+
+    const cleanMessage = decoded
+      .replace(/<a\b[^>]*>/gi, " ")
+      .replace(/<\/a>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return cleanMessage || fallback;
+  }
+
+  function duplicateEmailMessage() {
+    return 'This email address is already registered. Please use a different email address or <a href="https://abiastategov.sharepoint.com/sites/Abia360Extranet/SitePages/Home.aspx#/ppm/" target="_blank" rel="noopener noreferrer">sign in</a> to your existing account.';
+  }
+
+  function responseText(data, rawText) {
+    return (rawText + " " + JSON.stringify(data || ""))
+      .toLowerCase()
+      .replace(/["'`_:.,;!?()[\]{}<>/\\-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function looksLikeDuplicate(res, data, responseText) {
+    if (res.status === 409) return true;
+    if (data && typeof data === "object") {
+      const flags = [data.duplicate, data.isDuplicate, data.IsDuplicate, data.exists, data.Exists, data.alreadyExists];
+      if (flags.some(f => f === true || f === "true")) return true;
+    }
+    return /duplicate|already exist|already registered|already submitted|email (?:has been )?used|email (?:already )?(?:exist|registered|submitted)|business (?:already )?(?:exist|registered)|cac (?:number )?(?:has been )?used|cac (?:number )?(?:already )?(?:exist|registered|submitted)/i.test(responseText);
+  }
+
+  function duplicateFieldMessage(responseText) {
+    if (/cac (?:number )?(?:has been )?used|cac (?:number )?(?:already )?(?:exist|registered|submitted)/i.test(responseText)) {
+      return "This CAC number has already been used for another business. Please use a different CAC number.";
+    }
+    if (/business name|name already|business already/i.test(responseText)) {
+      return "This business name has already been used for another business. Please use a different business name.";
+    }
+    if (/email (?:has been )?used|email (?:already )?(?:exist|registered|submitted)/i.test(responseText)) {
+      return "This email address has already been used for another business. Please use a different email address.";
+    }
+    return "A business with this name, email address, or CAC number already exists. Please check all three fields and try again.";
+  }
+
+  function looksLikeBlacklisted(res, data, responseText) {
+    if (res.status === 403) return true;
+    if (data && typeof data === "object") {
+      const flags = [data.blacklisted, data.isBlacklisted, data.IsBlacklisted, data.blocked, data.Blocked, data.banned, data.Banned];
+      if (flags.some(f => f === true || f === "true")) return true;
+    }
+    return /blacklist|blacklisted|banned|blocked|not allowed to register|email (?:is )?(?:not allowed|blacklist|blacklisted|blocked|banned)/i.test(responseText);
+  }
+
+  async function handleSubmit(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (isSubmitting) return;
+
+    clearMessage();
+    clearFieldFlags();
+
+    if (!validateForm()) {
+      showMessage("error", "Please fix the highlighted fields before submitting.");
+      return;
+    }
+
+    const payload = {
+      businessname: fields.businessName.value.trim(),
+      businessemail: fields.businessEmail.value.trim().toLowerCase(),
+      cacnumber: fields.cacNumber.value.trim()
+    };
+
+    showMessage("info", "Submitting…");
+    setBusy(true);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const res = await fetch(API_URL, {
+        method: HTTP_METHOD,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      const rawText = await res.text();
+      let data = null;
+      try { data = rawText ? JSON.parse(rawText) : null; } catch (e) { }
+
+      const apiMessage = extractMessage(data, rawText);
+      const normalizedResponseText = responseText(data, rawText);
+
+      if (looksLikeBlacklisted(res, data, normalizedResponseText)) {
+        showMessage("error", "Failed to Submit: " + displayApiMessage(apiMessage, "This email address is blacklisted and cannot be used to register."));
+        clearFieldFlags();
+        fields.businessEmail.classList.add("flagged");
+        fields.businessEmail.focus();
+        return;
+      }
+
+      if (looksLikeDuplicate(res, data, normalizedResponseText)) {
+        showMessage("duplicate", duplicateEmailMessage());
+        clearFieldFlags();
+        Object.values(fields).forEach(f => f.classList.add("flagged"));
+        fields.businessEmail.focus();
+        return;
+      }
+
+      if (!res.ok) {
+        showMessage("error", "Failed to Submit: " + displayApiMessage(apiMessage, "Request failed with status " + res.status + "."));
+        return;
+      }
+
+      showMessage("success", "Your email has been registered successfully. Kindly check your email for further information");
+      form.reset();
+      setTimeout(() => {
+        if (statusMessage.classList.contains("success")) clearMessage();
+      }, 150000);
+      fields.businessName.focus();
+
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        showMessage("error", "Failed to Submit: The server took too long to respond. Please check your connection and try again.");
+      } else {
+        showMessage("error", "Failed to Submit: " + err.message);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  form.noValidate = true;
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  submitBtn.addEventListener("click", handleSubmit);
+</script>
+
+</body>
+</html>
